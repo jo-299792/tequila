@@ -1093,7 +1093,7 @@ class QuantumChemistryBase:
             else:
                 optimize = False
 
-        if "TAPERED" in tmol.transformation.name.upper() and optimize:
+        if "TAPERED" in self.transformation.name.upper() and optimize:
             def make_spa_tappered(self, edges, hcb=False, use_units_of_pi=False, label=None, optimize=False,
                                   ladder=True):
                 U = tq.QCircuit()
