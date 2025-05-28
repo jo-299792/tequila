@@ -1092,22 +1092,21 @@ class QuantumChemistryBase:
                 optimize = True
             else:
                 optimize = False
-
         if "TAPERED" in self.transformation.name.upper() and optimize:
-            def make_spa_tappered(self, edges, hcb=False, use_units_of_pi=False, label=None, optimize=False,
+            def make_spa_tappered(edges, hcb=False, use_units_of_pi=False, label=None, optimize=False,
                                   ladder=True):
-                U = tq.QCircuit()
+                U = QCircuit()
                 cedges = []
                 if optimize:
                     for edge in edges:
-                        if mol.n_orbitals - 1 in edge:
-                            cedge = [i for i in edge if i != mol.n_orbitals - 1] + [mol.n_orbitals - 1]
+                        if self.n_orbitals - 1 in edge:
+                            cedge = [i for i in edge if i != self.n_orbitals - 1] + [self.n_orbitals - 1]
                             cedges.append(cedge)
                         else:
                             cedges.append(edge)
                     for edge_orbitals in cedges:
-                        edge_qubits = [mol.transformation.up(i) for i in edge_orbitals]
-                        if not edge_qubits[0] == mol.transformation.up(mol.n_orbitals - 1):
+                        edge_qubits = [self.transformation.up(i) for i in edge_orbitals]
+                        if not edge_qubits[0] == self.transformation.up(self.n_orbitals - 1):
                             U += gates.X(edge_qubits[0])
                         if len(edge_qubits) == 1:
                             continue
@@ -1116,29 +1115,31 @@ class QuantumChemistryBase:
                             c = edge_qubits[i - 1]
                             if not ladder:
                                 c = edge_qubits[0]
-                            angle = tq.Variable(name=((edge_orbitals[i - 1], edge_orbitals[i]), "D", label))
+                            angle = Variable(name=((edge_orbitals[i - 1], edge_orbitals[i]), "D", label))
                             if use_units_of_pi:
                                 angle = angle * numpy.pi
-                            if (i - 1 == 0) and not (q1 == mol.transformation.up(mol.n_orbitals - 1)):
+                            if (i - 1 == 0) and not (q1 == self.transformation.up(self.n_orbitals - 1)):
                                 U += gates.Ry(angle=angle, target=q1, control=None)
-                            elif (i - 1 == 0) and (q1 == mol.transformation.up(mol.n_orbitals - 1)):
-                                U += tq.gates.Ry(angle=angle, target=c, control=None)
+                            elif (i - 1 == 0) and (q1 == self.transformation.up(self.n_orbitals - 1)):
+                                U += gates.Ry(angle=angle, target=c, control=None)
                             else:
                                 U += gates.Ry(angle=angle, target=q1, control=c)
-                            if q1 != mol.transformation.up(mol.n_orbitals - 1):
+                            if q1 != self.transformation.up(self.n_orbitals - 1):
                                 U += gates.CNOT(q1, c)
                     if not hcb:
-                        U += mol.hcb_to_me()
+                        U += self.hcb_to_me()
                 else:
-                    return mol.make_spa_ansatz(edges=edges, hcb=hcb, use_units_of_pi=use_units_of_pi, label=label,
-                                               optimize=False, ladder=ladder)
+                    return self.make_spa_ansatz(edges=edges, hcb=hcb, use_units_of_pi=use_units_of_pi, label=label,
+                                                optimize=False, ladder=ladder)
                 return U
 
-            return make_spa_tappered(edges=edges, hcb=hcb, use_units_of_pi=use_units_of_pi, label=label, optimize=False,
+            return make_spa_tappered(edges=edges, hcb=hcb, use_units_of_pi=use_units_of_pi, label=label, optimize=True,
                                      ladder=ladder)
+
         U = QCircuit()
 
         # construction of the optimized circuit
+
         if optimize:
             # circuit in HCB representation
             # depends a bit on the ordering of the spin-orbitals in the encoding
